@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum fileType {
+  PDF
+  AUDIO
+  IMAGE
+}
+
+model user {
+  id           Int      @id @default(autoincrement())
+  fullName     String
+  userName     String
+  email        String
+  hashPassword String
+  created_At   DateTime @default(now())
+
+  pdfFile     pdfFiles[]
+  imagesFile  imagesFiles[]
+  audioFile   audioFiles[]
+  chatHistory chatHistory[]
+}
+
+model audioFiles {
+  id          String   @id @default(uuid())
+  fileName    String
+  fileType    String   @default("AUDIO")
+  uploaded_At DateTime @default(now())
+  uploadedURL String
+
+  userId Int
+  user   user @relation(fields: [userId], references: [id])
+
+  extractedText extractedText[]
+  chatHistory   chatHistory[]
+}
+
+model imagesFiles {
+  id          String   @id @default(uuid())
+  fileName    String
+  fileType    String   @default("IMAGES")
+  uploaded_At DateTime @default(now())
+  uploadedURL String
+
+  userId Int
+  user   user @relation(fields: [userId], references: [id])
+
+  extractedText extractedText[]
+  chatHistory   chatHistory[]
+}
+
+model pdfFiles {
+  id          String   @id @default(uuid())
+  fileName    String
+  fileType    String   @default("PDF")
+  uploaded_At DateTime @default(now())
+  uploadedURL String
+
+  extractedText extractedText[]
+  chatHistory   chatHistory[]
+
+  userId Int
+  user   user @relation(fields: [userId], references: [id])
+}
+
+model extractedText {
+  id            Int      @id @default(autoincrement())
+  extractedText String
+  createdAt     DateTime @default(now())
+
+  audioFileId String?
+  imageFileId String?
+  pdfFileId   String?
+
+  audioFile audioFiles?  @relation(fields: [audioFileId], references: [id])
+  imageFile imagesFiles? @relation(fields: [imageFileId], references: [id])
+  pdfFile   pdfFiles?    @relation(fields: [pdfFileId], references: [id])
+}
+
+model chatHistory {
+  id       Int      @id @default(autoincrement())
+  question String
+  response String
+  askedAt  DateTime @default(now())
+
+  audioFileId String?
+  imageFileId String?
+  pdfFileId   String?
+
+  audioFile audioFiles?  @relation(fields: [audioFileId], references: [id])
+  imageFile imagesFiles? @relation(fields: [imageFileId], references: [id])
+  pdfFile   pdfFiles?    @relation(fields: [pdfFileId], references: [id])
+
+  userId Int
+  users  user @relation(fields: [userId], references: [id])
+}
